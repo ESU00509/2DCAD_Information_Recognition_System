@@ -181,7 +181,7 @@ if page == '识别工作台':
                 manual = None
                 if custom and mode!='whole':
                     manual = {}
-                    for name,label,default in [('title','标题栏',(27,79,100,100)),('notes','技术要求',(0,72,72,100)),('view_left','主体左侧',(0,0,56,80)),('view_right','主体右侧',(44,0,100,80))]:
+                    for name,label,default in [('title','标题栏',(27,79,100,100)),('notes','技术要求',(0,72,72,100)),('view_left','主体左侧',(0,0,56,80)),('view_right','主体右侧',(44,0,100,80)),('three_view','三视图整体',(0,0,100,80))]:
                         st.caption(label)
                         x = st.slider(label+' · 横向 %',0,100,(default[0],default[2]),key=name+'x')
                         y = st.slider(label+' · 纵向 %',0,100,(default[1],default[3]),key=name+'y')

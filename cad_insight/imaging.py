@@ -65,5 +65,6 @@ def locate_regions(image, texts, manual=None):
     regions = [('title', [int(w*.27), title_y, w, h]),
                ('notes', [0, note_y, int(w*.72), h]),
                ('view_left', [0, 0, int(w*.56), int(h*.80)]),
-               ('view_right', [int(w*.44), 0, w, int(h*.80)])]
+               ('view_right', [int(w*.44), 0, w, int(h*.80)]),
+               ('three_view', [0, 0, w, int(h*.80)])]
     return regions, 'heuristic'

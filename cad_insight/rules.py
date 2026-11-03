@@ -2,16 +2,24 @@ import re
 from .schema import Extraction, Fact, Feature, Relation, Dimensions, walk_facts
 
 def restrict_region_fields(result, region):
-    """Do not let overlapping note/view crops relabel equipment numbers as drawing IDs."""
+    """Keep only fields that the given region is responsible for (whitelist)."""
     result = result.model_copy(deep=True)
-    if region not in ('title', 'whole'):
-        for key in ('drawing_no', 'material', 'surface_treatment'):
-            setattr(result, key, Fact())
-    if region == 'notes':
-        result.part_name = Fact()
-    if region in ('title', 'notes'):
-        result.overall_dimensions = Dimensions(unit=result.overall_dimensions.unit)
-        result.features, result.relations = [], []
+    allowed = {
+        'title': {'part_name', 'drawing_no', 'material', 'surface_treatment', 'surface_roughness'},
+        'notes': {'surface_roughness', 'technical_requirements'},
+        'view_left': {'part_name', 'surface_roughness', 'features', 'relations'},
+        'view_right': {'part_name', 'surface_roughness', 'features', 'relations'},
+        'three_view': {'overall_dimensions'},
+    }.get(region)
+    if allowed is None:
+        return result
+    list_fields = {'technical_requirements', 'features', 'relations'}
+    for name in Extraction.model_fields:
+        if name == 'overall_dimensions':
+            if 'overall_dimensions' not in allowed:
+                result.overall_dimensions = Dimensions(unit=result.overall_dimensions.unit)
+        elif name not in allowed:
+            setattr(result, name, [] if name in list_fields else Fact())
     return result
 
 def fact(value, item, supported=False):

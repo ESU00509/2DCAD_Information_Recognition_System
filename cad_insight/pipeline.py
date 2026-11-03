@@ -83,8 +83,9 @@ def run(data: bytes, filename: str, mode='ocr', settings=None, progress=lambda *
             local = [region] + local
             task = {'title':'提取标题栏图号、材料、表面处理等，不将设备名直接当成零件名。',
                     'notes':'提取技术要求和粗糙度，保留条款条件。',
-                    'view_left':'提取可见特征及明确总体尺寸，保留标注级关系。',
-                    'view_right':'提取可见特征及明确总体尺寸，保留标注级关系。',
+                    'view_left':'提取可见特征及标注级关系。',
+                    'view_right':'提取可见特征及标注级关系。',
+                    'three_view':'只提取 overall_dimensions 的 length、width、height、unit。',
                     'whole':'提取整张图纸的结构化信息。'}.get(region.text, '提取本区域可见信息。')
             try:
                 if mode == 'text':
