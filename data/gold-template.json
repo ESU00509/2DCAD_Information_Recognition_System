@@ -1,0 +1,83 @@
+{
+  "extraction": {
+    "part_name": {
+      "value": null,
+      "raw_text": "",
+      "evidence_ids": [],
+      "source": "deepseek",
+      "status": "missing",
+      "note": ""
+    },
+    "drawing_no": {
+      "value": null,
+      "raw_text": "",
+      "evidence_ids": [],
+      "source": "deepseek",
+      "status": "missing",
+      "note": ""
+    },
+    "material": {
+      "value": null,
+      "raw_text": "",
+      "evidence_ids": [],
+      "source": "deepseek",
+      "status": "missing",
+      "note": ""
+    },
+    "surface_treatment": {
+      "value": null,
+      "raw_text": "",
+      "evidence_ids": [],
+      "source": "deepseek",
+      "status": "missing",
+      "note": ""
+    },
+    "surface_roughness": {
+      "value": null,
+      "raw_text": "",
+      "evidence_ids": [],
+      "source": "deepseek",
+      "status": "missing",
+      "note": ""
+    },
+    "overall_dimensions": {
+      "length": {
+        "value": null,
+        "raw_text": "",
+        "evidence_ids": [],
+        "source": "deepseek",
+        "status": "missing",
+        "note": ""
+      },
+      "width": {
+        "value": null,
+        "raw_text": "",
+        "evidence_ids": [],
+        "source": "deepseek",
+        "status": "missing",
+        "note": ""
+      },
+      "height": {
+        "value": null,
+        "raw_text": "",
+        "evidence_ids": [],
+        "source": "deepseek",
+        "status": "missing",
+        "note": ""
+      },
+      "unit": {
+        "value": null,
+        "raw_text": "",
+        "evidence_ids": [],
+        "source": "deepseek",
+        "status": "missing",
+        "note": ""
+      }
+    },
+    "technical_requirements": [],
+    "features": [],
+    "relations": []
+  },
+  "unjudgeable_paths": [],
+  "annotation_note": "待人工标注，不是已完成真值。请保留证据编号及原文。"
+}

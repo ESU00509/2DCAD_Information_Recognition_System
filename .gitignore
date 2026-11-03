@@ -1,0 +1,21 @@
+# Virtual environments
+.venv/
+
+# Local caches and model weights
+.cache/
+data/jobs/
+data/cache/
+
+# Secrets
+.env
+
+# Python / test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Runtime build artifacts
+artifacts/
+.preview/
+ppt_work/
+*.log

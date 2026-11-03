@@ -1,0 +1,12 @@
+streamlit==1.66.1
+paddlepaddle==3.2.2
+paddleocr==3.3.2
+langchain-core>=1,<2
+langgraph>=1,<2
+openai>=2,<3
+pydantic>=2.10,<3
+python-dotenv>=1,<2
+Pillow>=11,<13
+opencv-python-headless>=4.10,<5
+pytest>=8,<10
+playwright>=1.50,<2
