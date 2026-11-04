@@ -7,6 +7,9 @@ openai>=2,<3
 pydantic>=2.10,<3
 python-dotenv>=1,<2
 Pillow>=11,<13
-opencv-python-headless>=4.10,<5
 pytest>=8,<10
 playwright>=1.50,<2
+
+# 用于跑 YOLO 模型
+ultralytics==8.4.202
+opencv-python==5.0.0.93

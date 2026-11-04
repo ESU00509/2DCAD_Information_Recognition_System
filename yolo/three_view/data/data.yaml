@@ -1,0 +1,7 @@
+path: D:\programming\project\2DCAD_Information_Recognition_System\yolo\three_view\data
+train: images/train
+val: images/val
+
+names:
+  0: 3d
+  1: three_view

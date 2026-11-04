@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 from typing import TypedDict
 from .schema import Extraction, Evidence, walk_facts, validate_evidence
-from .imaging import load_image, digest, locate_regions
+from .imaging import load_image, digest, prepare_regions, region_crop
 from .ocr import recognize, OCR_VERSION
 from .rules import extract_rules, merge_extraction, restrict_region_fields
 from .deepseek import DeepSeekGateway, GatewayError, PROMPT_VERSION
@@ -17,6 +17,7 @@ class State(TypedDict, total=False):
     extraction: Extraction
     warnings: list
     regions: list
+    keep_boxes: list
     route: str
     ocr_cached: bool
     layout: str
@@ -50,22 +51,23 @@ def run(data: bytes, filename: str, mode='ocr', settings=None, progress=lambda *
     def prepare_node(state):
         report('定位区域，提取规则字段', .47)
         result = extract_rules(state['evidence'])
+        keep_boxes = []
         if mode == 'whole':
             regions, layout = [('whole', [0, 0, image.width, image.height])], 'whole'
         else:
-            regions, layout = locate_regions(image, state['evidence'], manual)
+            regions, layout, keep_boxes = prepare_regions(image, state['evidence'], manual)
         evidence = list(state['evidence'])
         region_items = []
         for i, (name, box) in enumerate(regions):
             item = Evidence(id=f'R{i+1:02d}', kind='region', bbox=box, text=name)
             evidence.append(item)
             region_items.append(item)
-            image.crop(box).save(job / f'{item.id}.png')
+            region_crop(image, name, box, keep_boxes).save(job / f'{item.id}.png')
         warnings = list(state['warnings'])
         if mode != 'ocr' and gateway is None:
             warnings.append('未配置 API Key，已降级为本地 OCR 规则结果。')
         return {'extraction':result, 'regions':region_items, 'evidence':evidence,
-                'layout':layout, 'warnings':warnings,
+                'layout':layout, 'keep_boxes':keep_boxes, 'warnings':warnings,
                 'route':'api' if gateway else 'validate', 'api_complete':False}
 
     def api_node(state):
@@ -73,12 +75,24 @@ def run(data: bytes, filename: str, mode='ocr', settings=None, progress=lambda *
         warnings = list(state['warnings'])
         tasks = state['regions']
         completed = 0
+        keep_boxes = state.get('keep_boxes', [])
+
+        def center_in(frame, item):
+            x = (item.bbox[0] + item.bbox[2]) / 2
+            y = (item.bbox[1] + item.bbox[3]) / 2
+            return frame[0] <= x <= frame[2] and frame[1] <= y <= frame[3]
+
         for index, region in enumerate(tasks):
             report(f'DeepSeek 解析区域 {index+1}/{len(tasks)} · {region.text}', .52+.32*index/len(tasks))
             box = region.bbox
-            local = [e for e in state['evidence'] if e.kind == 'ocr' and
-                     box[0] <= (e.bbox[0]+e.bbox[2])/2 <= box[2] and
-                     box[1] <= (e.bbox[1]+e.bbox[3])/2 <= box[3]]
+            # three_view is a set of view boxes: keep text whose centre falls inside at
+            # least one of them. Text sitting in the gaps between views is not part of
+            # the drawing, even though it is inside the union rectangle.
+            if region.text == 'three_view' and keep_boxes:
+                local = [e for e in state['evidence'] if e.kind == 'ocr' and
+                         any(center_in(kb[:4], e) for kb in keep_boxes)]
+            else:
+                local = [e for e in state['evidence'] if e.kind == 'ocr' and center_in(box, e)]
             # Only references supplied to this call are valid evidence.
             local = [region] + local
             task = {'title':'提取标题栏图号、材料、表面处理等，不将设备名直接当成零件名。',
@@ -87,17 +101,18 @@ def run(data: bytes, filename: str, mode='ocr', settings=None, progress=lambda *
                     'view_right':'提取可见特征及标注级关系。',
                     'three_view':'只提取 overall_dimensions 的 length、width、height、unit。',
                     'whole':'提取整张图纸的结构化信息。'}.get(region.text, '提取本区域可见信息。')
+            crop = region_crop(image, region.text, box, keep_boxes)
             try:
                 if mode == 'text':
                     # Explicitly text-only path: no inferred visual grounding.
                     incoming = gateway.extract_text(local, task)
                 else:
-                    incoming = gateway.extract(image.crop(box), local, task)
+                    incoming = gateway.extract(crop, local, task)
                 incoming = restrict_region_fields(incoming, region.text)
                 conflicts = merge_extraction(result, incoming)
                 warnings.extend(conflicts)
                 if conflicts and mode != 'text' and gateway.requests < settings.max_requests:
-                    review = gateway.extract(image.crop(box), local, task, '\n'.join(conflicts))
+                    review = gateway.extract(crop, local, task, '\n'.join(conflicts))
                     # A second opinion does not automatically resolve a contradictory numeric value.
                     merge_extraction(result, restrict_region_fields(review,region.text))
                 completed += 1
